@@ -1,10 +1,15 @@
 package com.lhdz.myexpandlistview;
 
-import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
+
+import com.lhdz.base.BaseActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +18,7 @@ import java.util.List;
  * Created by 李南 on 2016/1/14  10:47
  * Email:fengyunzhinan@163.com
  */
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
 
 
     private ExpandableListView mExpandableListView;
@@ -26,9 +31,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        setTranslucentStatus();
         setContentView(R.layout.activity_main);
-        initView();
-        initData();
+        initialize();
         // 给expandableListView设置适配器;
         MyExpandAdapter adapter = new MyExpandAdapter(this, firstList, secondList);
         mExpandableListView.setAdapter(adapter);
@@ -40,6 +45,8 @@ public class MainActivity extends Activity {
                 vh = (MyExpandAdapter.ViewHolder) parent.getTag();
 
                 Toast.makeText(MainActivity.this, secondList.get(groupPosition).get(childPosition), Toast.LENGTH_SHORT).show();
+                initData();
+
                 return false;
             }
         });
@@ -48,7 +55,8 @@ public class MainActivity extends Activity {
     /**
      * 设置一些测试数据
      */
-    private void initData() {
+    @Override
+    public void initData() {
         firstList = new ArrayList<>();
         secondList = new ArrayList<List<String>>();
         addData("西天", new String[]{"孙悟空", "唐僧", "沙僧"});
@@ -70,10 +78,32 @@ public class MainActivity extends Activity {
     /**
      * 控件的初始化
      */
-    private void initView() {
+    @Override
+    public void initView() {
         mExpandableListView = (ExpandableListView) findViewById(R.id.expandlist);
         mExpandableListView.setGroupIndicator(null);
+        //获取Android_id
+        String android_id = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        //获取android_IMEI唯一号
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);
+        String deviceId = telephonyManager.getDeviceId();
+    }
 
+    private void setTranslucentStatus() {
+        //若版本号大于4.4（奇巧）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // 透明状态栏
+            getWindow().addFlags(
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // 透明导航栏
+            getWindow().addFlags(
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+//            SystemStatusManager tintManager = new SystemStatusManager(this);
+//            tintManager.setStatusBarTintEnabled(true);
+//            // 设置状态栏的颜色
+//            tintManager.setStatusBarTintResource(R.color.colorPrimaryDark);
+//            getWindow().getDecorView().setFitsSystemWindows(true);
+        }
     }
 
 
